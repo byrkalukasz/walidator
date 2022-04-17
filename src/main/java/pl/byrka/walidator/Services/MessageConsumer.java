@@ -20,11 +20,22 @@ public class MessageConsumer {
     public void messagelistener(String application){
         System.out.println(application);
         var model = gson.fromJson(application,StudentApplication.class);
-        System.out.println(model.toString());
-        messageSent(application);
+        var send = validateApplication(model);
+        var string = gson.toJson(send);
+        messageSent(string);
     }
 
     public void messageSent(String studentApplication){
         jmsTemplate.convertAndSend("${activemq.send}",studentApplication);
+    }
+
+    private StudentApplication validateApplication(StudentApplication studentApplication){
+        if(studentApplication.getPesel() == "96011803330"){
+            studentApplication.setMessage("Walidacja numeru PESELu niepoprawna");
+            studentApplication.setState(5);
+        }else{
+            studentApplication.setState(2);
+        }
+        return studentApplication;
     }
 }
